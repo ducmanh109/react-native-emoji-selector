@@ -4,14 +4,13 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
   Platform,
   ActivityIndicator,
 } from "react-native";
 import emoji from "emoji-datasource";
-
-import MMKVStorage from "react-native-mmkv-storage";
+import { MMKVLoader } from "react-native-mmkv-storage";
 import { FlashList } from "@shopify/flash-list";
+
 export const Categories = {
   all: {
     symbol: null,
@@ -58,37 +57,40 @@ export const Categories = {
     name: "Flags",
   },
 };
-const storage = new MMKVStorage.Loader().initialize();
+const storage = new MMKVLoader().initialize();
 
 const charFromUtf16 = (utf16) => {
   if (!utf16) {
     return "";
   }
-  return String.fromCodePoint(...utf16.split("-").map((u) => "0x" + u));
+  return String.fromCodePoint(...utf16.split("-").map((u) => parseInt(u, 16)));
 };
 export const charFromEmojiObject = (obj) => charFromUtf16(obj.unified);
+
 const filteredEmojis = emoji.filter((e) => !e["obsoleted_by"]);
 const emojiByCategory = (category) =>
   filteredEmojis.filter((e) => e.category === category);
 const sortEmoji = (list) => list.sort((a, b) => a.sort_order - b.sort_order);
 const categoryKeys = Object.keys(Categories);
 
-const EmojiCell = ({ emoji, colSize, ...other }) => (
-  <TouchableOpacity
-    activeOpacity={0.5}
-    style={{
-      width: colSize,
-      height: colSize,
-      alignItems: "center",
-      justifyContent: "center",
-    }}
-    {...other}
-  >
-    <Text style={{ color: "#FFFFFF", fontSize: colSize - 12 }}>
-      {charFromEmojiObject(emoji)}
-    </Text>
-  </TouchableOpacity>
-);
+const EmojiCell = ({ emoji, colSize, ...other }) => {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.5}
+      style={{
+        width: colSize,
+        height: colSize,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+      {...other}
+    >
+      <Text style={{ color: "#FFFFFF", fontSize: colSize - 12 }}>
+        {charFromEmojiObject(emoji)}
+      </Text>
+    </TouchableOpacity>
+  );
+};
 
 const storage_key = "@react-native-emoji-selector:HISTORY";
 export default class EmojiSelector extends Component {
@@ -326,23 +328,20 @@ export default class EmojiSelector extends Component {
       <View style={styles.frame} {...other} onLayout={this.handleLayout}>
         <View style={{ flex: 1 }}>
           {isReady ? (
-            <View style={{ flex: 1 }}>
-              <View style={styles.container}>
-                <FlashList
-                  style={styles.scrollview}
-                  contentContainerStyle={{ paddingBottom: colSize }}
-                  data={emojis}
-                  renderItem={this.renderEmojiCell}
-                  horizontal={false}
-                  numColumns={columns}
-                  keyboardShouldPersistTaps={"always"}
-                  ref={(scrollview) => (this.scrollview = scrollview)}
-                  removeClippedSubviews
-                  showsVerticalScrollIndicator={false}
-                  estimatedItemSize={40}
-                  ListHeaderComponent={ListHeaderComponent}
-                />
-              </View>
+            <View style={styles.container}>
+              <FlashList
+                contentContainerStyle={{ paddingBottom: colSize }}
+                data={emojis}
+                renderItem={this.renderEmojiCell}
+                horizontal={false}
+                numColumns={columns}
+                keyboardShouldPersistTaps={"always"}
+                ref={(scrollview) => (this.scrollview = scrollview)}
+                removeClippedSubviews
+                showsVerticalScrollIndicator={false}
+                estimatedItemSize={40}
+                ListHeaderComponent={ListHeaderComponent}
+              />
             </View>
           ) : (
             <View style={styles.loader} {...other}>
