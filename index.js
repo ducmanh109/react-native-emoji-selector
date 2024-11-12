@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   Platform,
   ActivityIndicator,
+  FlatList,
 } from "react-native";
 import emoji from "emoji-datasource";
 import { MMKVLoader } from "react-native-mmkv-storage";
-import { FlashList } from "@shopify/flash-list";
 
 export const Categories = {
   all: {
@@ -329,7 +329,7 @@ export default class EmojiSelector extends Component {
         <View style={{ flex: 1 }}>
           {isReady ? (
             <View style={styles.container}>
-              <FlashList
+              <FlatList
                 contentContainerStyle={{ paddingBottom: colSize }}
                 data={emojis}
                 renderItem={this.renderEmojiCell}
@@ -337,9 +337,9 @@ export default class EmojiSelector extends Component {
                 numColumns={columns}
                 keyboardShouldPersistTaps={"always"}
                 ref={(scrollview) => (this.scrollview = scrollview)}
-                removeClippedSubviews
+                removeClippedSubviews={false}
                 showsVerticalScrollIndicator={false}
-                estimatedItemSize={40}
+                // estimatedItemSize={40}
                 ListHeaderComponent={ListHeaderComponent}
               />
             </View>
